@@ -5,72 +5,124 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: maratana <maratana@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/10/24 14:46:33 by maratana          #+#    #+#             */
-/*   Updated: 2026/11/23 21:12:36 by maratana         ###   ########.fr       */
+/*   Created: 2026/11/24 17:28:55 by maratana          #+#    #+#             */
+/*   Updated: 2026/11/24 20:30:09 by maratana         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-int	ft_strlen(const char *s)
+char	*join_free(char *storage, char *buffer)
 {
-	int	i;
+	char	*temp;
+
+	temp = ft_strjoin(storage, buffer);
+	free(storage);
+	return (temp);
+}
+
+char	*read_first_line(int fd, char *storage)
+{
+	char	*buffer;
+	int		bytes_read;
+
+	if (!storage)
+		storage = ft_calloc(1, 1);
+	buffer = malloc((BUFFER_SIZE + 1) * sizeof(char));
+	if (!buffer)
+		return (NULL);
+	bytes_read = 1;
+	while (bytes_read > 0)
+	{
+		bytes_read = read(fd, buffer, BUFFER_SIZE);
+		if (bytes_read == -1)
+		{
+			free(storage);
+			free(buffer);
+			return (NULL);
+		}
+		buffer[bytes_read] = 0;
+		storage = join_free(storage, buffer);
+		if (ft_strchr(storage, '\n'))
+			break ;
+	}
+	free(buffer);
+	return (storage);
+}
+
+char	*get_line(char *str)
+{
+	int		i;
+	char	*line;
 
 	i = 0;
-	while (s[i])
+	if (!str[i])
+		return (NULL);
+	while (str[i] && str[i] != '\n')
 		i++;
-	return (i);
-}
-
-char	*ft_strchr(const char *s, int c)
-{
-	char	*str;
-
-	str = (char *)s;
-	while (*str != c)
+	line = ft_calloc(i + 2, sizeof(char));
+	i = 0;
+	while (str[i] && str[i] != '\n')
 	{
-		if (*str == '\0')
-			return (NULL);
-		str++;
+		line[i] = str[i];
+		i++;
 	}
-	return (str);
+	if (str[i] && str[i] == '\n')
+		line[i++] = '\n';
+	return (line);
 }
 
-char	*ft_strjoin(char *s1, char *s2)
+char	*remove_line(char *storage)
 {
-	char	*start;
-	char	*str;
+	char	*leftover;
+	int		i;
+	int		j;
 
-	if (!s1 || !s2)
+	i = 0;
+	j = 0;
+	while (storage[i] && storage[i] != '\n')
+		i++;
+	if (!storage[i])
+	{
+		free(storage);
 		return (NULL);
-	str = (char *)malloc((ft_strlen(s1) + ft_strlen(s2) + 1) * sizeof(char));
-	if (!str)
+	}
+	leftover = malloc(ft_strlen(storage) - i + 1);
+	if (!leftover)
 		return (NULL);
-	start = str;
-	while (*s1)
-		*str++ = *s1++;
-	while (*s2)
-		*str++ = *s2++;
-	*str = '\0';
-	return (start);
+	while (storage[++i])
+		leftover[j++] = storage[i];
+	leftover[j] = '\0';
+	free(storage);
+	return (leftover);
 }
 
-void	ft_bzero(void *s, unsigned int n)
+char	*get_next_line(int fd)
 {
-	unsigned char	*p;
+	char		*output;
+	static char	*storage;
 
-	p = s;
-	while (n--)
-		*p++ = '\0';
-}
-
-void	*ft_calloc(unsigned int count, unsigned int size)
-{
-	void	*pointer;
-
-	pointer = malloc(count * size);
-	if (!pointer)
+	if (BUFFER_SIZE <= 0 || fd < 0)
 		return (NULL);
-	ft_bzero(pointer, size * count);
-	return (pointer);
+	storage = read_first_line(fd, storage);
+	if (!storage)
+		return (NULL);
+	output = get_line(storage);
+	storage = remove_line(storage);
+	return (output);
 }
+
+//  int main()
+// {
+// 	int fd = open("test.txt", O_RDONLY);
+// 	char *a;
+
+// 	while ((a = get_next_line(fd)))
+// 	{
+// 		printf("%s", a);
+// 	}
+
+// 	// printf("%s", get_next_line(fd));
+
+// 	return (0);
+// }
