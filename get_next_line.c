@@ -6,7 +6,7 @@
 /*   By: maratana <maratana@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/11/24 17:28:55 by maratana          #+#    #+#             */
-/*   Updated: 2026/11/24 20:30:09 by maratana         ###   ########.fr       */
+/*   Updated: 2026/11/24 20:33:44 by maratana         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,18 +111,3 @@ char	*get_next_line(int fd)
 	storage = remove_line(storage);
 	return (output);
 }
-
-//  int main()
-// {
-// 	int fd = open("test.txt", O_RDONLY);
-// 	char *a;
-
-// 	while ((a = get_next_line(fd)))
-// 	{
-// 		printf("%s", a);
-// 	}
-
-// 	// printf("%s", get_next_line(fd));
-
-// 	return (0);
-// }
